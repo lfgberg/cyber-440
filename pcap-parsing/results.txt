@@ -1,0 +1,226 @@
+IP: 192.168.1.1
+  Open TCP Ports: 443
+  Open UDP Ports: 514
+
+IP: 10.200.150.206
+  Open TCP Ports: 1823
+
+IP: 172.20.1.5
+  Open TCP Ports: 80
+
+IP: 192.168.1.10
+  Open TCP Ports: 49958, 49960, 443, 51999
+  Open UDP Ports: 137
+
+IP: 10.200.150.208
+  Open TCP Ports: 4130
+
+IP: 192.168.1.6
+  Open TCP Ports: 43025, 135, 43032
+  Open UDP Ports: 137
+
+IP: 10.200.150.201
+  Open TCP Ports: 4429, 4430, 1787
+
+IP: 192.168.2.121
+  Open UDP Ports: 137
+
+IP: 192.168.1.8
+  Open TCP Ports: 443
+
+IP: 192.168.1.12
+  Open TCP Ports: 903, 443, 902
+
+IP: 192.168.1.13
+  Open TCP Ports: 1179, 1158, 1153, 1164, 1148, 1067, 1169, 1175, 1144, 1165
+  Open UDP Ports: 137
+
+IP: 192.168.1.9
+  Open TCP Ports: 903, 443
+
+IP: 192.168.2.63
+  Open UDP Ports: 137
+
+IP: 192.168.1.14
+  Open TCP Ports: 135, 49155, 445
+  Open UDP Ports: 389, 53, 137, 88
+
+IP: 192.168.1.2
+  Open TCP Ports: 135, 49158, 139, 445, 49155, 389
+  Open UDP Ports: 53, 389, 88, 123
+
+IP: 192.168.2.111
+  Open UDP Ports: 138
+
+IP: 192.168.2.138
+  Open UDP Ports: 138
+
+IP: 192.168.2.158
+  Open UDP Ports: 138
+
+IP: 192.168.2.23
+  Open UDP Ports: 138
+
+IP: 192.168.2.133
+  Open UDP Ports: 137
+
+IP: 192.168.2.75
+  Open UDP Ports: 137
+
+IP: 192.168.1.11
+  Open TCP Ports: 443
+
+IP: 192.168.2.147
+  Open UDP Ports: 138
+
+IP: 192.168.2.64
+  Open TCP Ports: 2383
+  Open UDP Ports: 137
+
+IP: fe80::587a:dd0d:a966:532
+  Open UDP Ports: 0
+
+IP: 192.168.2.82
+  Open UDP Ports: 137
+
+IP: 192.168.2.120
+  Open UDP Ports: 137
+
+IP: 10.200.150.2
+  Open UDP Ports: 137, 53
+
+IP: 192.168.2.36
+  Open UDP Ports: 137
+
+IP: 192.168.2.85
+  Open UDP Ports: 138
+
+IP: 192.168.2.37
+  Open UDP Ports: 138
+
+IP: 192.168.2.71
+  Open UDP Ports: 138
+
+IP: 192.168.2.159
+  Open UDP Ports: 138
+
+IP: 192.168.2.119
+  Open UDP Ports: 137
+
+IP: 192.168.2.31
+  Open UDP Ports: 138
+
+IP: 192.168.2.79
+  Open UDP Ports: 138
+
+IP: 192.168.2.11
+  Open TCP Ports: 2008, 2013
+  Open UDP Ports: 137
+
+IP: 192.168.2.73
+  Open UDP Ports: 138
+
+IP: 192.168.2.101
+  Open UDP Ports: 138
+
+IP: 192.168.2.26
+  Open UDP Ports: 138
+
+IP: 192.168.2.125
+  Open UDP Ports: 138
+
+IP: 192.168.2.78
+  Open UDP Ports: 138
+
+IP: 192.168.2.45
+  Open TCP Ports: 3389
+  Open UDP Ports: 137
+
+IP: 192.168.2.99
+  Open UDP Ports: 137
+
+IP: 192.168.2.60
+  Open UDP Ports: 138
+
+IP: 192.168.2.153
+  Open UDP Ports: 137
+
+IP: 192.168.2.102
+  Open UDP Ports: 137
+
+IP: 192.168.2.68
+  Open UDP Ports: 138
+
+IP: 192.168.2.47
+  Open UDP Ports: 138, 137
+
+IP: 192.168.2.171
+  Open TCP Ports: 50096
+  Open UDP Ports: 138
+
+IP: 192.168.2.84
+  Open UDP Ports: 137
+
+IP: 192.168.2.13
+  Open TCP Ports: 3389
+
+IP: 192.168.2.16
+  Open UDP Ports: 138
+
+IP: 192.168.2.20
+  Open UDP Ports: 123
+
+IP: 192.168.2.33
+  Open UDP Ports: 137
+
+IP: 192.168.2.44
+  Open UDP Ports: 137
+
+IP: 192.168.2.48
+  Open UDP Ports: 138
+
+IP: 192.168.2.54
+  Open UDP Ports: 137
+
+IP: 192.168.2.55
+  Open UDP Ports: 137
+
+IP: 192.168.2.62
+  Open UDP Ports: 137
+
+IP: 10.200.150.6
+  Open UDP Ports: 138
+
+IP: 192.168.2.108
+  Open UDP Ports: 138
+
+IP: 192.168.2.118
+  Open UDP Ports: 137
+
+IP: 192.168.2.100
+  Open UDP Ports: 137
+
+IP: 192.168.2.130
+  Open UDP Ports: 138
+
+IP: 192.168.2.145
+  Open UDP Ports: 138, 137
+
+IP: 192.168.1.5
+  Open UDP Ports: 138
+
+IP: 192.168.1.4
+  Open UDP Ports: 138
+
+IP: 192.168.2.105
+  Open UDP Ports: 138
+
+IP: 192.168.2.132
+  Open UDP Ports: 138
+
+IP: 192.168.2.172
+  Open UDP Ports: 137
+
+IP: 192.168.2.155
+  Open UDP Ports: 138
+
