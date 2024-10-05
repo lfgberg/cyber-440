@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime
+import json
 
 def main():
     # Define the XML namespace
@@ -16,6 +17,13 @@ def main():
     logons = tallyLogons(events)
     uniqueLogins = tallyUniqueLogons(logons)
     eventCounts = countLogonEvents(events)
+    loginReport = groupByHour(events, "4624")
+    failedLoginReport = groupByHour(events, "4625")
+
+    # Save reports
+    saveReport(logons, 'logon-by-users-report.json')
+    saveReport(loginReport, 'logon-by-hour-report.json')
+    saveReport(failedLoginReport, 'failed-login-by-hour-report.json')
 
     # Print the data we need
     print("----- Stage 1 -----")
@@ -28,7 +36,6 @@ def main():
     print(f'Logon event count: {eventCounts[0]}')
     print(f'Unique user logins: {uniqueLogins}')
     print("Report generated with logins per user.")
-    print(logons)
 
     print("----- Part C -----")
     print(f'Logon event count: {eventCounts[1]}')
@@ -38,20 +45,37 @@ def main():
 
     exit()
 
-def groupByHour(events):
-    report = {
-        '4625',
-        '4624'
-    }
+def saveReport(report, filename):
+    with open(filename, 'w') as file:
+        json.dump(report, file, indent=4)
+
+def groupByHour(events, id):
+    report = {}
 
     for event in events:
+        if (event['EventID'] != id):
+            continue
+
         # Format the time
         time = event['TimeCreated']
-        time = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%fZ')
-        hour = time.strftime('%Y-%m-%dT%H')
 
-        if (event['EventID'] == "4624"):
-            report['4624'][]
+        if isinstance(time, str):
+                # Truncate any extra fractional seconds and parse
+                if '.' in time:
+                    main_time, fraction = time.split('.')
+                    fraction = fraction[:6]  # Truncate to 6 digits (microseconds)
+                    time = f"{main_time}.{fraction}Z"
+
+        time = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+        hour = time.strftime('%Y-%m-%dT%H')
+    
+        if (hour in report):
+            report[hour] += 1
+        else:
+            report[hour] = 1
+    
+    return report
 
 def tallyUniqueLogons(logons):
     uniqueUsers = set()  # Use a set to automatically handle uniqueness
