@@ -7,29 +7,33 @@ def main():
     namespace = {'ns': 'http://schemas.microsoft.com/win/2004/08/events/event'}
 
     # Path to your XML file containing EVTX records
-    path = "SecurityLog-rev2.xml"
+    path = "events.xml"
 
     # Parse XML
     XMLData = readXML(path)
 
     # Read events + get data
     events = parseData(XMLData, namespace)
-    logons = tallyLogons(events)
+    logonEvents = parseLogonData(XMLData, namespace)
+    logons = tallyLogons(logonEvents)
     uniqueLogins = tallyUniqueLogons(logons)
-    eventCounts = countLogonEvents(events)
-    loginReport = groupByHour(events, "4624")
-    failedLoginReport = groupByHour(events, "4625")
+    eventCounts = countLogonEvents(logonEvents)
+    loginReport = groupByHour(logonEvents, "4624")
+    failedLoginReport = groupByHour(logonEvents, "4625")
+
+    # Get times
+    sortedEvents = sorted(events, key=lambda x: datetime.strptime(x['TimeCreated'], "%Y-%m-%dT%H:%M:%S.%fZ"))
 
     # Save reports
-    saveReport(logons, 'logon-by-users-report.json')
-    saveReport(loginReport, 'logon-by-hour-report.json')
-    saveReport(failedLoginReport, 'failed-login-by-hour-report.json')
+    #saveReport(logons, 'logon-by-users-report.json')
+    #saveReport(loginReport, 'logon-by-hour-report.json')
+    #saveReport(failedLoginReport, 'failed-login-by-hour-report.json')
 
     # Print the data we need
     print("----- Stage 1 -----")
     print("----- Part A -----")
-    print(f'First event time: {events[0]['TimeCreated']}')
-    print(f'Last event time: {events[len(events) - 1]['TimeCreated']}')
+    print(f'First event time: {sortedEvents[0]['TimeCreated']}')
+    print(f'Last event time: {sortedEvents[len(sortedEvents) - 1]['TimeCreated']}')
     print(f'Event count: {len(events)}')
 
     print("----- Part B -----")
@@ -121,6 +125,32 @@ def parseData(XMLData, namespace):
 
     # Iterate over each event
     for event in root.findall("ns:Event", namespace):
+        # Extract various data from the event (e.g., EventID, TimeCreated)
+        timeCreated = event.find("ns:System/ns:TimeCreated", namespace).attrib.get('SystemTime')
+        eventId = event.find("ns:System/ns:EventID", namespace).text
+    
+        # Trim extra digits in the microseconds part if present
+        if '.' in timeCreated:
+            timeCreated = timeCreated[:timeCreated.index('.') + 7] + 'Z'
+
+        # Store the data in a dictionary
+        event_data = {
+            'EventID': eventId,
+            'TimeCreated': timeCreated,
+        }
+
+        # Append the event data to the list
+        events.append(event_data)
+
+    return events
+
+def parseLogonData(XMLData, namespace):
+    root = XMLData
+
+    events = []
+
+    # Iterate over each event
+    for event in root.findall("ns:Event", namespace):
         # Filter down to logon/failed logon events
         eventId = event.find("ns:System/ns:EventID", namespace).text
 
@@ -132,6 +162,7 @@ def parseData(XMLData, namespace):
         
         # Extract TargetUserName and TargetComputer from EventData
         event_data_section = event.find("ns:EventData", namespace)
+        providerName = event.find("ns:System/ns:Provider", namespace).attrib.get('Name')
         targetUser = None
         targetComputer = None
 
@@ -140,10 +171,6 @@ def parseData(XMLData, namespace):
                 targetUser = data.text
             elif data.attrib.get('Name') == "TargetDomainName":
                 targetComputer = data.text
-
-        # You can extract more fields as needed here
-        # Example: Extract event provider name
-        providerName = event.find("ns:System/ns:Provider", namespace).attrib.get('Name')
     
         # Store the data in a dictionary
         event_data = {
