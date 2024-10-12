@@ -14,17 +14,17 @@ def main():
     XMLData = readXML(path)
 
     # Read events + get data
-    events = parseData(XMLData, namespace)
-    logonEvents = parseLogonData(XMLData, namespace)
+    events = parseEvents(XMLData, namespace)
+    logonEvents = parseEvents(XMLData, namespace, eventIds=["4624", "4625"], extractLogonData=True)
     logons = tallyLogons(logonEvents)
     uniqueLogins = tallyUniqueLogons(logons)
     eventCounts = countLogonEvents(logonEvents)
-    loginReport = groupByHour(logonEvents, "4624")
-    failedLoginReport = groupByHour(logonEvents, "4625")
+    loginReport = groupEventsByHour(logonEvents, "4624")
+    failedLoginReport = groupEventsByHour(logonEvents, "4625")
 
     # User login reports
-    mattEdwardsReport = groupUserLogonByHour(logonEvents, 'Matt.Edwards')
-    grantLarsonReport = groupUserLogonByHour(logonEvents, 'grant.larson')
+    mattEdwardsReport = groupEventsByHour(logonEvents, '4624', 'Matt.Edwards')
+    grantLarsonReport = groupEventsByHour(logonEvents, '4624', 'grant.larson')
     plotFrequencyChart(mattEdwardsReport, "Matt Edwards")
     plotFrequencyChart(grantLarsonReport, "Grant Larson")
 
@@ -32,9 +32,9 @@ def main():
     sortedEvents = sorted(events, key=lambda x: datetime.strptime(x['TimeCreated'], "%Y-%m-%dT%H:%M:%S.%fZ"))
 
     # Save reports
-    #saveReport(logons, 'logon-by-users-report.json')
-    #saveReport(loginReport, 'logon-by-hour-report.json')
-    #saveReport(failedLoginReport, 'failed-login-by-hour-report.json')
+    saveReport(logons, 'logon-by-users-report.json')
+    saveReport(loginReport, 'logon-by-hour-report.json')
+    saveReport(failedLoginReport, 'failed-login-by-hour-report.json')
 
     # Print the data we need
     print("----- Stage 1 -----")
@@ -77,63 +77,39 @@ def plotFrequencyChart(report, username):
     plt.savefig(f'{username}-login-chart.png', format='png', dpi=300)
     plt.clf()
 
-def groupUserLogonByHour(events, username):
+def groupEventsByHour(events, event_id=None, username=None):
     report = {}
 
     for event in events:
-        if (event['EventID'] != '4624'):
+        # Filter by event ID if specified
+        if event_id and event['EventID'] != event_id:
             continue
 
-        if (event['TargetUserName'] != username):
+        # Filter by username if specified (only for logon events)
+        if username and event.get('TargetUserName') != username:
             continue
 
         # Format the time
         time = event['TimeCreated']
 
         if isinstance(time, str):
-                # Truncate any extra fractional seconds and parse
-                if '.' in time:
-                    main_time, fraction = time.split('.')
-                    fraction = fraction[:6]  # Truncate to 6 digits (microseconds)
-                    time = f"{main_time}.{fraction}Z"
+            # Truncate any extra fractional seconds and parse
+            if '.' in time:
+                main_time, fraction = time.split('.')
+                fraction = fraction[:6]  # Truncate to 6 digits (microseconds)
+                time = f"{main_time}.{fraction}Z"
 
         time = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%fZ')
 
+        # Group by the hour
         hour = time.strftime('%Y-%m-%dT%H')
-    
-        if (hour in report):
+
+        # Increment count for that hour
+        if hour in report:
             report[hour] += 1
         else:
             report[hour] = 1
-    
-    return report
 
-def groupByHour(events, id):
-    report = {}
-
-    for event in events:
-        if (event['EventID'] != id):
-            continue
-
-        # Format the time
-        time = event['TimeCreated']
-
-        if isinstance(time, str):
-                # Truncate any extra fractional seconds and parse
-                if '.' in time:
-                    main_time, fraction = time.split('.')
-                    fraction = fraction[:6]  # Truncate to 6 digits (microseconds)
-                    time = f"{main_time}.{fraction}Z"
-
-        time = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%fZ')
-
-        hour = time.strftime('%Y-%m-%dT%H')
-    
-        if (hour in report):
-            report[hour] += 1
-        else:
-            report[hour] = 1
-    
     return report
 
 def tallyUniqueLogons(logons):
@@ -173,68 +149,48 @@ def countLogonEvents(events):
     
     return [logonCount, logoffCount]
 
-def parseData(XMLData, namespace):
+def parseEvents(XMLData, namespace, eventIds=None, extractLogonData=False):
     root = XMLData
-
     events = []
 
-    # Iterate over each event
     for event in root.findall("ns:Event", namespace):
-        # Extract various data from the event (e.g., EventID, TimeCreated)
-        timeCreated = event.find("ns:System/ns:TimeCreated", namespace).attrib.get('SystemTime')
+        # Extract basic data (EventID and TimeCreated)
         eventId = event.find("ns:System/ns:EventID", namespace).text
-    
+        timeCreated = event.find("ns:System/ns:TimeCreated", namespace).attrib.get('SystemTime')
+
+        # Filter by specific event IDs if provided
+        if eventIds and eventId not in eventIds:
+            continue
+
         # Trim extra digits in the microseconds part if present
         if '.' in timeCreated:
             timeCreated = timeCreated[:timeCreated.index('.') + 7] + 'Z'
 
-        # Store the data in a dictionary
+        # Prepare basic event data
         event_data = {
             'EventID': eventId,
-            'TimeCreated': timeCreated,
+            'TimeCreated': timeCreated
         }
 
-        # Append the event data to the list
-        events.append(event_data)
+        # Optionally extract logon-related data if required
+        if extractLogonData:
+            eventDataSection = event.find("ns:EventData", namespace)
+            providerName = event.find("ns:System/ns:Provider", namespace).attrib.get('Name')
+            targetUser = None
+            targetComputer = None
 
-    return events
+            for data in eventDataSection.findall("ns:Data", namespace):
+                if data.attrib.get('Name') == "TargetUserName":
+                    targetUser = data.text
+                elif data.attrib.get('Name') == "TargetDomainName":
+                    targetComputer = data.text
 
-def parseLogonData(XMLData, namespace):
-    root = XMLData
-
-    events = []
-
-    # Iterate over each event
-    for event in root.findall("ns:Event", namespace):
-        # Filter down to logon/failed logon events
-        eventId = event.find("ns:System/ns:EventID", namespace).text
-
-        if (eventId != "4624" and eventId != "4625"):
-            continue
-
-        # Extract various data from the event (e.g., EventID, TimeCreated)
-        timeCreated = event.find("ns:System/ns:TimeCreated", namespace).attrib.get('SystemTime')
-        
-        # Extract TargetUserName and TargetComputer from EventData
-        event_data_section = event.find("ns:EventData", namespace)
-        providerName = event.find("ns:System/ns:Provider", namespace).attrib.get('Name')
-        targetUser = None
-        targetComputer = None
-
-        for data in event_data_section.findall("ns:Data", namespace):
-            if data.attrib.get('Name') == "TargetUserName":
-                targetUser = data.text
-            elif data.attrib.get('Name') == "TargetDomainName":
-                targetComputer = data.text
-    
-        # Store the data in a dictionary
-        event_data = {
-            'EventID': eventId,
-            'TimeCreated': timeCreated,
-            'ProviderName': providerName,
-            'TargetComputer': targetComputer,
-            'TargetUserName': targetUser
-        }
+            # Add logon-specific fields to event_data
+            event_data.update({
+                'ProviderName': providerName,
+                'TargetUserName': targetUser,
+                'TargetComputer': targetComputer
+            })
 
         # Append the event data to the list
         events.append(event_data)
