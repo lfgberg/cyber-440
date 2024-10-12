@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime
+import matplotlib.pyplot as plt
 import json
 
 def main():
@@ -20,6 +21,12 @@ def main():
     eventCounts = countLogonEvents(logonEvents)
     loginReport = groupByHour(logonEvents, "4624")
     failedLoginReport = groupByHour(logonEvents, "4625")
+
+    # User login reports
+    mattEdwardsReport = groupUserLogonByHour(logonEvents, 'Matt.Edwards')
+    grantLarsonReport = groupUserLogonByHour(logonEvents, 'grant.larson')
+    plotFrequencyChart(mattEdwardsReport, "Matt Edwards")
+    plotFrequencyChart(grantLarsonReport, "Grant Larson")
 
     # Get times
     sortedEvents = sorted(events, key=lambda x: datetime.strptime(x['TimeCreated'], "%Y-%m-%dT%H:%M:%S.%fZ"))
@@ -46,12 +53,60 @@ def main():
 
     print("----- Stage 2 -----")
     print("Report generated with logins and failed logins over time.")
+    print("Login frequency charts generated for matt.edwards and grant.larson.")
 
     exit()
 
 def saveReport(report, filename):
     with open(filename, 'w') as file:
         json.dump(report, file, indent=4)
+
+def plotFrequencyChart(report, username):
+    # Generate plot
+    sortedReport = dict(sorted(report.items()))
+    plt.bar(sortedReport.keys(), sortedReport.values())
+
+    # Format the plot
+    plt.xlabel('Hour')
+    plt.ylabel('Login Count')
+    plt.title(f'{username} Login Frequency')
+    plt.xticks(rotation=45, ha='right')
+
+    # Show the plot
+    plt.tight_layout()
+    plt.savefig(f'{username}-login-chart.png', format='png', dpi=300)
+    plt.clf()
+
+def groupUserLogonByHour(events, username):
+    report = {}
+
+    for event in events:
+        if (event['EventID'] != '4624'):
+            continue
+
+        if (event['TargetUserName'] != username):
+            continue
+
+        # Format the time
+        time = event['TimeCreated']
+
+        if isinstance(time, str):
+                # Truncate any extra fractional seconds and parse
+                if '.' in time:
+                    main_time, fraction = time.split('.')
+                    fraction = fraction[:6]  # Truncate to 6 digits (microseconds)
+                    time = f"{main_time}.{fraction}Z"
+
+        time = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+        hour = time.strftime('%Y-%m-%dT%H')
+    
+        if (hour in report):
+            report[hour] += 1
+        else:
+            report[hour] = 1
+    
+    return report
 
 def groupByHour(events, id):
     report = {}
