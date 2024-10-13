@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import matplotlib.pyplot as plt
+import pandas as pd
 import json
 
 def main():
@@ -21,6 +22,7 @@ def main():
     eventCounts = countLogonEvents(logonEvents)
     loginReport = groupEventsByHour(logonEvents, "4624")
     failedLoginReport = groupEventsByHour(logonEvents, "4625")
+    uniqueEventReport = lookupEvents(events)
 
     # User login reports
     mattEdwardsReport = groupEventsByHour(logonEvents, '4624', 'Matt.Edwards')
@@ -33,6 +35,7 @@ def main():
 
     # Save reports
     saveReport(logons, 'logon-by-users-report.json')
+    saveReport(uniqueEventReport, 'unique-events-in-file.json')
     saveReport(loginReport, 'logon-by-hour-report.json')
     saveReport(failedLoginReport, 'failed-login-by-hour-report.json')
 
@@ -56,6 +59,36 @@ def main():
     print("Login frequency charts generated for matt.edwards and grant.larson.")
 
     exit()
+
+def lookupEvents(events):
+    eventMapping = {}
+    uniqueEvents = set()  # Use a set to automatically handle uniqueness
+
+    # Iterate over the events
+    for event in events:
+        uniqueEvents.add(event['EventID'])
+
+    for event in uniqueEvents:
+        eventMapping[event] = getEventDescription(event)
+
+    return eventMapping
+
+def getEventDescription(eventID):
+    # Lookup events by id
+    eventMapping = pd.read_csv("windows-event-id.csv", encoding='utf-16')
+
+    eventID = str(eventID).strip()
+    eventMapping['EVENT_ID'] = eventMapping['EVENT_ID'].astype(str).str.strip()
+
+    event = eventMapping[eventMapping['EVENT_ID'] == eventID]
+
+    print(event)
+
+    if not event.empty:
+        return event.iloc[0]['EVENT_DESCRIPTION']
+    else:
+        return "Event ID not found"
+    
 
 def saveReport(report, filename):
     with open(filename, 'w') as file:

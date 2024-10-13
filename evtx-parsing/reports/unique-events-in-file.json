@@ -1,0 +1,14 @@
+{
+    "4662": "An operation was performed on an object",
+    "4624": "An account was successfully logged on",
+    "4742": "A computer account was changed",
+    "4672": "Special privileges assigned to new logon",
+    "4648": "A logon was attempted using explicit credentials",
+    "4776": "The domain controller attempted to validate the credentials for an account",
+    "4769": "A Kerberos service ticket was requested",
+    "4625": "An account failed to log on",
+    "4634": "An account was logged off",
+    "4770": "A Kerberos service ticket was renewed",
+    "1102": "The audit log was cleared",
+    "4768": "A Kerberos authentication ticket (TGT) was requested"
+}
